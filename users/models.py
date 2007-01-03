@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib import auth
 
+#Represent one trusted root URI. Can be shared between several users.
 class TrustedRoot(models.Model):
         root = models.URLField(primary_key = True)
 
@@ -10,6 +11,7 @@ class TrustedRoot(models.Model):
         class Admin:
                 pass
 
+#Represent one system user, based on Django's internal user system.
 class DjangoidUser(models.Model):
         #This seems not to work:
         #djangouser = models.ForeignKey(auth.models.User, primary_key = True)
@@ -33,6 +35,7 @@ class DjangoidUser(models.Model):
         class Admin:
                 pass
 
+#Identities can have attributes. These items represent one possible attribute.
 class IdentityAttribute(models.Model):
         name = models.CharField(maxlength = 128)
         namespace = models.CharField(maxlength = 32)
@@ -47,11 +50,15 @@ class IdentityAttribute(models.Model):
         class Meta:
                 unique_together = (("name", "namespace"),)
 
+#This maps an attribute to a user, including a value, obviously
 class UserAttribute(models.Model):
         user = models.ForeignKey(DjangoidUser)
         attribute = models.ForeignKey(IdentityAttribute)
         value = models.TextField()
+        #True if this attribute's value may be displayed to all trust roots
         public = models.BooleanField()
+        #List of specific trust roots this attribute may be displayed to.
+        #If "public" is True, this got no meaning at all
         public_for = models.ManyToManyField(TrustedRoot, blank = True, null = True)
 
         def __str__(self):
@@ -61,4 +68,5 @@ class UserAttribute(models.Model):
                 pass
 
         class Meta:
+                #Only store an attribute once for every user
                 unique_together = (("user", "attribute"),)
