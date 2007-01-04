@@ -60,7 +60,7 @@ def endpoint(request):
                 #username), redirect to the login page. This is part of the "users" application.
                 #Make sure we pass all OpenID related information in the URL
                 if not request.user or request.user.is_authenticated() == False:
-                        return redirect_to_login(urllib.quote(r.encodeToURL("/".join([""] + settings.BASE_URL.split("/")[3:]))), login_url = settings.BASE_URL + "login/")
+                        return redirect_to_login(urllib.quote(r.encodeToURL("/".join([""] + settings.BASE_URL.split("/")[3:]))) + "&tr=" + urllib.quote(r.trust_root), login_url = settings.BASE_URL + "login/")
                 if not request.user.username == user.djangouser:
                         raise Exception, "Logged in as " + request.user.username + " while expecting " + user.djangouser
 
