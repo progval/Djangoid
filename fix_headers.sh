@@ -3,7 +3,7 @@ HEADER_FILE="header.gpl"
 EOL="#EOL"
 
 for sf in `find . -iname "*.py" \! -regex "\./openid/.*"`; do
-        if grep ${EOL} ${sf}; then
+        if grep ${EOL} ${sf} > /dev/null; then
                 echo "${sf}: got header"
         else
                 echo -n "${sf}: adding header..."

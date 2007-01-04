@@ -16,11 +16,10 @@
 #
 #EOL
 from django.http import HttpResponse, HttpResponseRedirect
-from openid.server import server
-from djangoid.server.djangoidstore import DjangoidStore
 from django.conf import settings
 from django.shortcuts import render_to_response
 from djangoid.users.models import DjangoidUser
+from djangoid.openidhandlers import checkYadisRequest, convertToOpenIDRequest, convertToHttpResponse, handleOpenIDRequest 
 import re
 
 #Regex to extract username out of identity delegate URI, like
@@ -28,24 +27,6 @@ import re
 #                             ^^^^^^^
 #Watch the trailing /
 _identityRe = re.compile(settings.BASE_URL + "(?P<uid>[^/]+)/$")
-
-#Global OpenID server instance, using a DjangoidStore object as container
-openidserver = server.Server(DjangoidStore())
-
-#Convert an OpenID server response to a Django-compatible HttpResponse:
-#copy HTTP headers, and payload
-def convertOpenidServerResponse(response):
-        try:
-                webresponse = openidserver.encodeResponse(response)
-        except server.EncodingError, why:
-                raise
-
-        r = HttpResponse(webresponse.body)
-        for header, value in webresponse.headers.iteritems():
-                r[header] = value
-        r.status_code = webresponse.code
-
-        return r
 
 #Get a DjangoidUser object, based on a delegate URI
 def getDjangoidUserFromIdentity(identity):
@@ -59,21 +40,10 @@ def getDjangoidUserFromIdentity(identity):
 #Server endpoint. URI: http://id.nicolast.be/
 def endpoint(request):
         #If this is (most likely) a YADIS request, handle it using the YADIS view function
-        if request.META.has_key("HTTP_ACCEPT"):
-                ct = request.META["HTTP_ACCEPT"]
-                if ct.startswith("application/xrds+xml"):
-                        return serveryadis(request)
+        if checkYadisRequest(request):
+                return serveryadis(request)
 
-        #Copy over all query (GET and POST) key-value pairs, so we can pass them to out OpenID server.
-        #request.REQUEST.copy() seems not to work, as openidserver.decodeRequest seems to use some function
-        #on the passed object that's not implemented in the copied object.
-        query = {}
-        for i in request.REQUEST.items():
-                query[i[0]] = i[1]
-        try:
-                r = openidserver.decodeRequest(query)
-        except server.ProtocolError, why:
-                raise
+        r = convertToOpenIDRequest(request)
 
         #If the request wasnt a valid OpenID server request, render some static page.
         #TODO: use render_to_response("about.html")
@@ -106,9 +76,9 @@ def endpoint(request):
                         return HttpResponseRedirect(r.encodeToURL(settings.BASE_URL + "accept/"))
         #If not, let the OpenID server do everything for us :-)
         else:
-                response = openidserver.handleRequest(r)
+                response = handleOpenIDRequest(r)
 
-        return convertOpenidServerResponse(response)
+        return convertToHttpResponse(response)
 
 #A server YADIS document is requested. I don't think this is widely used yet, but well... Let's just return it.
 def serveryadis(request):

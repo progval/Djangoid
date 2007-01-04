@@ -16,7 +16,7 @@
 #
 #EOL
 from django.db import models
-from django.contrib import auth
+from django.contrib.auth.models import User
 
 #Represent one trusted root URI. Can be shared between several users.
 class TrustedRoot(models.Model):
@@ -31,7 +31,7 @@ class TrustedRoot(models.Model):
 #Represent one system user, based on Django's internal user system.
 class DjangoidUser(models.Model):
         #This seems not to work:
-        #djangouser = models.ForeignKey(auth.models.User, primary_key = True)
+        #djangouser = models.ForeignKey(User, primary_key = True)
         #So using an ugly hack... TODO: Fixme!
         djangouser = models.CharField('username', maxlength = 30, primary_key = True)
         trusted_roots = models.ManyToManyField(TrustedRoot, blank = True, null = True)
@@ -55,8 +55,10 @@ class DjangoidUser(models.Model):
 #Identities can have attributes. These items represent one possible attribute.
 class IdentityAttribute(models.Model):
         name = models.CharField(maxlength = 128)
+        title = models.CharField(maxlength = 128)
         namespace = models.CharField(maxlength = 32)
         description = models.TextField(blank = True)
+        regex = models.CharField(maxlength = 128, blank = True)
 
         def __str__(self):
                 return self.namespace + "." + self.name
