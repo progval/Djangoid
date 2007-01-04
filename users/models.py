@@ -20,7 +20,7 @@ from django.contrib.auth.models import User
 
 #Represent one trusted root URI. Can be shared between several users.
 class TrustedRoot(models.Model):
-        root = models.URLField(primary_key = True)
+        root = models.URLField("Trusted root URI", primary_key = True)
 
         def __str__(self):
                 return self.root
@@ -33,8 +33,8 @@ class DjangoidUser(models.Model):
         #This seems not to work:
         #djangouser = models.ForeignKey(User, primary_key = True)
         #So using an ugly hack... TODO: Fixme!
-        djangouser = models.CharField('username', maxlength = 30, primary_key = True)
-        trusted_roots = models.ManyToManyField(TrustedRoot, blank = True, null = True)
+        djangouser = models.CharField('Django user username', maxlength = 30, primary_key = True, help_text = "This should be the username of an existing user in the django.contrib.auth system")
+        trusted_roots = models.ManyToManyField(TrustedRoot, blank = True, null = True, help_text = "URI's trusted by this user")
 
         def __str__(self):
                 return self.djangouser
@@ -54,11 +54,11 @@ class DjangoidUser(models.Model):
 
 #Identities can have attributes. These items represent one possible attribute.
 class IdentityAttribute(models.Model):
-        name = models.CharField(maxlength = 128)
-        title = models.CharField(maxlength = 128)
-        namespace = models.CharField(maxlength = 32)
-        description = models.TextField(blank = True)
-        regex = models.CharField(maxlength = 128, blank = True)
+        name = models.CharField("Name", maxlength = 128, help_text = "Name of the attribute. In \"openid.sreg.nickname\" this is \"nickname\"")
+        title = models.CharField("Title", maxlength = 128, help_text = "Title of the attribute, as displayed to the user")
+        namespace = models.CharField("Namespace", maxlength = 32, help_text = "Namespace of the attribute. In \"openid.sreg.nickname\" this is \"sreg\"")
+        description = models.TextField("Description", blank = True, help_text = "Longer description of the attribute, as displayed to the user")
+        regex = models.CharField("Validation regex", maxlength = 128, blank = True, help_text = "Regex the value of this field is validated upon on updates")
 
         def __str__(self):
                 return self.namespace + "." + self.name
@@ -71,14 +71,14 @@ class IdentityAttribute(models.Model):
 
 #This maps an attribute to a user, including a value, obviously
 class UserAttribute(models.Model):
-        user = models.ForeignKey(DjangoidUser)
-        attribute = models.ForeignKey(IdentityAttribute)
-        value = models.TextField()
+        user = models.ForeignKey(DjangoidUser, help_text = "DjangoidUser this attribute value belongs to")
+        attribute = models.ForeignKey(IdentityAttribute, help_text = "Attribute of which this is the value for this user")
+        value = models.TextField("Value")
         #True if this attribute's value may be displayed to all trust roots
-        public = models.BooleanField()
+        public = models.BooleanField("Public", help_text = "If this is true, this attribute is returned in all authentication requests, of all trust roots")
         #List of specific trust roots this attribute may be displayed to.
         #If "public" is True, this got no meaning at all
-        public_for = models.ManyToManyField(TrustedRoot, blank = True, null = True)
+        public_for = models.ManyToManyField(TrustedRoot, blank = True, null = True, help_text = "List of all trust roots this value should be displayed to. If \"public\" is true, this list got no value")
 
         def __str__(self):
                 return str(self.user) + ": " + str(self.attribute)

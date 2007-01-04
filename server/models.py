@@ -23,9 +23,6 @@ class OidStoreNonce(models.Model):
         nonce = models.CharField(maxlength = 8, primary_key = True)
         expires = models.IntegerField()
 
-        class Admin:
-                pass
-
 class OidStoreAssociation(models.Model):
         server_url = models.TextField()
         handle = models.CharField(maxlength = 255)
@@ -34,9 +31,6 @@ class OidStoreAssociation(models.Model):
         lifetime = models.IntegerField()
         assoc_type = models.CharField(maxlength = 64)
 
-        class Admin:
-                pass
-
         class Meta:
                 #Django got no multi-column primary keys
                 unique_together = (("server_url", "handle"),)
@@ -44,6 +38,3 @@ class OidStoreAssociation(models.Model):
 class OidStoreSetting(models.Model):
         setting = models.CharField(maxlength = 128, primary_key = True)
         value = models.TextField()
-
-        class Admin:
-                pass

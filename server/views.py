@@ -18,9 +18,11 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django.shortcuts import render_to_response
+from django.contrib.auth.views import redirect_to_login
 from djangoid.users.models import DjangoidUser
 from djangoid.openidhandlers import checkYadisRequest, convertToOpenIDRequest, convertToHttpResponse, handleOpenIDRequest 
 import re
+import urllib
 
 #Regex to extract username out of identity delegate URI, like
 #       http://id.nicolast.be/nicolas/
@@ -58,7 +60,7 @@ def endpoint(request):
                 #username), redirect to the login page. This is part of the "users" application.
                 #Make sure we pass all OpenID related information in the URL
                 if not request.user or request.user.is_authenticated() == False:
-                        return HttpResponseRedirect(r.encodeToURL(settings.BASE_URL + "login/"))
+                        return redirect_to_login(urllib.quote(r.encodeToURL("/".join([""] + settings.BASE_URL.split("/")[3:]))), login_url = settings.BASE_URL + "login/")
                 if not request.user.username == user.djangouser:
                         raise Exception, "Logged in as " + request.user.username + " while expecting " + user.djangouser
 
