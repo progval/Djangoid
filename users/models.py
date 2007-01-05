@@ -19,7 +19,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
 import datetime
-from djangoid.microidutils import microid
+from djangoid.microidutils import microid, find_microid
 
 #Represent one trusted root URI. Can be shared between several users.
 class TrustedRoot(models.Model):
@@ -51,6 +51,9 @@ class DjangoidUser(models.Model):
                                 if root == mr.root:
                                         return True
                 return False
+
+        def get_user_page(self):
+                return settings.BASE_URL + self.djangouser + "/"
 
         class Admin:
                 pass
@@ -104,13 +107,24 @@ class ClaimedUri(models.Model):
                 return self.uri
 
         def get_contact_uri(self):
-                return settings.BASE_URL + self.user.djangouser + "/"
+                return self.user.get_user_page()
 
         def get_microid(self):
                 return microid(self.get_contact_uri(), self.uri)
 
+        def update_validity(self):
+                found = find_microid(self.uri)
+                self.last_checked = datetime.datetime.now()
+                self.is_valid = (self.get_microid() in found)
+                self.save()
+
         class Admin:
-                pass
+                date_hierarchy = "last_checked"
+                list_display = ("user", "uri", "is_valid", "get_microid",)
+                list_filter = ("user", "is_valid",)
+                search_fields = ["user", "uri"]
 
         class Meta:
                 unique_together = (("user", "uri"),)
+                get_latest_by = "last_checked"
+                ordering = ["user", "is_valid", "last_checked"]
