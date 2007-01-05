@@ -53,6 +53,9 @@ class DjangoidUser(models.Model):
                                         return True
                 return False
 
+        def get_djangouser(self):
+                return User.objects.get(username = self.djangouser)
+
         def get_user_page(self):
                 #Strip of last / from BASE_URL
                 return settings.BASE_URL[:-1] + urlreverse("djangoid.users.views.userpage", kwargs = {"uid": self.djangouser})
@@ -115,18 +118,21 @@ class ClaimedUri(models.Model):
         def get_contact_uri(self):
                 return self.user.get_user_page()
 
-        def get_microid(self):
-                return microid(self.get_contact_uri(), self.uri)
+        def get_microids(self):
+                return [microid(self.get_contact_uri(), self.uri), microid("mailto:" + self.user.get_djangouser().email, self.uri)]
 
         def update_validity(self):
                 found = find_microid(self.uri)
                 self.last_checked = datetime.datetime.now()
-                self.is_valid = (self.get_microid() in found)
+                self.is_valid = False
+                for id in self.get_microids():
+                        if id in found:
+                                self.is_valid = True
                 self.save()
 
         class Admin:
                 date_hierarchy = "last_checked"
-                list_display = ("user", "uri", "is_valid", "get_microid",)
+                list_display = ("user", "uri", "is_valid", "get_microids",)
                 list_filter = ("user", "is_valid",)
                 search_fields = ["user", "uri"]
 
