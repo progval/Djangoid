@@ -63,25 +63,42 @@ class DjangoidUser(models.Model):
         def get_yadis_uri(self):
                 return settings.BASE_URL[:-1] + urlreverse("djangoid.users.views.useryadis", kwargs = {"uid": self.djangouser})
 
+        def get_name(self):
+                f = None
+                l = None
+                try:
+                        f = UserAttribute.objects.get(user = self, attribute__name__exact = "FIRST_NAME", public = True).value
+                except:
+                        pass
+                try:
+                        l = UserAttribute.objects.get(user = self, attribute__name__exact = "LAST_NAME", public = True).value
+                except:
+                        pass
+
+                if l is None and f is None:
+                        return self.djangouser
+                else:
+                        if l is None:
+                                return f
+                        if f is None:
+                                return l
+                        return f + " " + l
+
         class Admin:
                 pass
 
 #Identities can have attributes. These items represent one possible attribute.
 class IdentityAttribute(models.Model):
-        name = models.CharField("Name", maxlength = 128, help_text = "Name of the attribute. In \"openid.sreg.nickname\" this is \"nickname\"")
+        name = models.CharField("Name", maxlength = 128, help_text = "Internal name of the attribute.", primary_key = True)
         title = models.CharField("Title", maxlength = 128, help_text = "Title of the attribute, as displayed to the user")
-        namespace = models.CharField("Namespace", maxlength = 32, help_text = "Namespace of the attribute. In \"openid.sreg.nickname\" this is \"sreg\"")
         description = models.TextField("Description", blank = True, help_text = "Longer description of the attribute, as displayed to the user")
         regex = models.CharField("Validation regex", maxlength = 128, blank = True, help_text = "Regex the value of this field is validated upon on updates")
 
         def __str__(self):
-                return self.namespace + "." + self.name
+                return self.title
 
         class Admin:
                 pass
-
-        class Meta:
-                unique_together = (("name", "namespace"),)
 
 #This maps an attribute to a user, including a value, obviously
 class UserAttribute(models.Model):

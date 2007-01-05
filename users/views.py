@@ -22,7 +22,7 @@ from django.core.urlresolvers import reverse as urlreverse
 from openid.server import server
 
 from djangoid.server.views import getDjangoidUserFromIdentity
-from djangoid.users.models import TrustedRoot, DjangoidUser
+from djangoid.users.models import TrustedRoot, DjangoidUser, UserAttribute
 from djangoid.openidhandlers import convertToOpenIDRequest, checkYadisRequest, convertToHttpResponse
 from djangoid.microidutils import microid
 
@@ -38,6 +38,9 @@ def userpage(request, uid):
                 return useryadis(request, uid)
 
         user = DjangoidUser.objects.get(djangouser = uid)
+        user.attributes = {}
+        for a in UserAttribute.objects.filter(user = user, public = True):
+                user.attributes[a.attribute.name] = a.value
         mid = microid(user.get_user_page(), user.get_user_page())
         res = render_to_response("users/userpage.html", {"server_url": settings.BASE_URL[:-1] + urlreverse("djangoid.server.views.endpoint"), "user": user, "microid": mid})
         res["X-XRDS-Location"] = user.get_yadis_uri()

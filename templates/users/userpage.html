@@ -6,7 +6,28 @@
                 <meta name="microid" content="{{ microid }}" />
         </head>
         <body>
-                <h1>User page of {{ user.djangouser }}</h1>
+                <h1>User page of {{ user.get_name }}</h1>
+                <h2>About {{ user.get_name }}</h2>
+                <div class="vcard">
+                        {% if user.attributes.FIRST_NAME %}
+                        <div>Name: <span class="fn"><span class="given-name">{{ user.attributes.FIRST_NAME }}</span>{% if user.attributes.LAST_NAME %} <span class="family-name">{{ user.attributes.LAST_NAME }}</span>{% endif %}</span></div>
+                        {% endif %}
+                        {% if user.attributes.HOMEPAGE_URI %}
+                        <div>Homepage: <a class="url" href="{{ user.attributes.HOMEPAGE_URI }}">{{ user.attributes.HOMEPAGE_URI }}</a></div>
+                        {% endif %}
+                        {% if user.attributes.EMAIL %}
+                        <div>Email: <a class="email" href="mailto:{{ user.attributes.EMAIL }}">{{ user.attributes.EMAIL }}</a></div>
+                        {% endif %}
+                        {% if user.attributes.IM_JID %}
+                        <div>Jabber: <a class="url jid" href="xmpp:{{ user.attributes.IM_JID }}">{{ user.attributes.IM_JID }}</a></div>
+                        {% endif %}
+                        {% if user.attributes.NICKNAME %}
+                        <div>Nick: <span class="nickname">{{ user.attributes.NICKNAME }}</span></div>
+                        {% endif %}
+                        {% if user.attributes.DATE_OF_BIRTH %}
+                        <div>Date of birth: <abbr class="bday" title="{{ user.attributes.DATE_OF_BIRTH }}">{{ user.attributes.DATE_OF_BIRTH }}</abbr></div>
+                        {% endif %}
+                </div>
                 <h2>Claimed URIs</h2>
                 <table>
                         <thead>
@@ -20,10 +41,10 @@
                         <tbody>
                                 {% for uri in user.claimeduri_set.all %}
                                 <tr>
-                                        <td><a href="{{ uri.uri }}">{{ uri.uri }}</a></td>
+                                        <td><a href="{{ uri.uri }}" rel="me">{{ uri.uri }}</a></td>
                                         <td>{{ uri.is_valid }}</td>
                                         <td>{{ uri.last_checked }}</td>
-                                        <td>{{ uri.get_microid }}</td>
+                                        <td>{{ uri.get_microids }}</td>
                                 </tr>
                                 {% endfor %}
                         </tbody>
