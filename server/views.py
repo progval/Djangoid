@@ -20,7 +20,7 @@ from django.conf import settings
 from django.shortcuts import render_to_response
 from django.contrib.auth.views import redirect_to_login
 from django.contrib.auth.models import User as DjangoUser
-from djangoid.users.models import DjangoidUser
+from djangoid.users.models import DjangoidUser, ClaimedUri
 from djangoid.openidhandlers import checkYadisRequest, convertToOpenIDRequest, convertToHttpResponse, handleOpenIDRequest 
 import re
 import urllib
@@ -44,6 +44,8 @@ def getDjangoidUserFromIdentity(identity):
                         raise Exception, ("This user does not exist: " + uid)
                 user = DjangoidUser(djangouser = uid)
                 user.save()
+                c = ClaimedUri(user = user, uri = user.get_user_page())
+                c.save()
                 return user
 
 #Server endpoint. URI: http://id.nicolast.be/

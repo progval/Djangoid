@@ -21,8 +21,9 @@ from django.conf import settings
 from openid.server import server
 
 from djangoid.server.views import getDjangoidUserFromIdentity
-from djangoid.users.models import TrustedRoot
+from djangoid.users.models import TrustedRoot, DjangoidUser
 from djangoid.openidhandlers import convertToOpenIDRequest, checkYadisRequest, convertToHttpResponse
+from djangoid.microidutils import microid
 
 def useryadis(request, uid):
         res = render_to_response("users/yadis.xrds", {"server_url": settings.BASE_URL, "uid": uid})
@@ -35,7 +36,9 @@ def userpage(request, uid):
         if checkYadisRequest(request):
                 return useryadis(request, uid)
 
-        res = render_to_response("users/userpage.html", {"server_url": settings.BASE_URL, "uid": uid})
+        user = DjangoidUser.objects.get(djangouser = uid)
+        mid = microid(user.get_user_page(), user.get_user_page())
+        res = render_to_response("users/userpage.html", {"server_url": settings.BASE_URL, "user": user, "microid": mid})
         res["X-XRDS-Location"] = settings.BASE_URL + uid + "/yadis/"
         return res
 

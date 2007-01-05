@@ -1,11 +1,33 @@
 <html>
         <head>
                 <link rel="openid.server" href="{{ server_url }}" />
-                <link rel="openid.delegate" href="{{ server_url}}{{ uid }}/" />
-                <meta http-equiv="x-xrds-location" content="{{ server_url }}{{ uid }}/yadis/" />
+                <link rel="openid.delegate" href="{{ server_url}}{{ user.djangouser }}/" />
+                <meta http-equiv="x-xrds-location" content="{{ server_url }}{{ user.djangouser }}/yadis/" />
+                <meta name="microid" content="{{ microid }}" />
         </head>
         <body>
-                User page of {{ uid }}
+                <h1>User page of {{ user.djangouser }}</h1>
+                <h2>Claimed URIs</h2>
+                <table>
+                        <thead>
+                                <tr>
+                                        <th>URI</th>
+                                        <th>Valid</th>
+                                        <th>Last check</th>
+                                        <th>MicroID</th>
+                                </tr>
+                        </thead>
+                        <tbody>
+                                {% for uri in user.claimeduri_set.all %}
+                                <tr>
+                                        <td><a href="{{ uri.uri }}">{{ uri.uri }}</a></td>
+                                        <td>{{ uri.is_valid }}</td>
+                                        <td>{{ uri.last_checked }}</td>
+                                        <td>{{ uri.get_microid }}</td>
+                                </tr>
+                                {% endfor %}
+                        </tbody>
+                </table>
         </body>
 </html>
 
