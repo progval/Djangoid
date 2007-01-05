@@ -19,6 +19,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django.shortcuts import render_to_response
 from django.contrib.auth.views import redirect_to_login
+from django.contrib.auth.models import User as DjangoUser
 from djangoid.users.models import DjangoidUser
 from djangoid.openidhandlers import checkYadisRequest, convertToOpenIDRequest, convertToHttpResponse, handleOpenIDRequest 
 import re
@@ -37,7 +38,13 @@ def getDjangoidUserFromIdentity(identity):
         if not len(user) == 0:
                 return user[0]
         else:
-                raise Exception, "User " + uid + " unknown"
+                #Create the user
+                #Check if Django user exists
+                if DjangoUser.objects.filter(username = uid).count() == 0:
+                        raise Exception, ("This user does not exist: " + uid)
+                user = DjangoidUser(djangouser = uid)
+                user.save()
+                return user
 
 #Server endpoint. URI: http://id.nicolast.be/
 def endpoint(request):

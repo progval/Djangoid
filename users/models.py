@@ -17,6 +17,9 @@
 #EOL
 from django.db import models
 from django.contrib.auth.models import User
+from django.conf import settings
+import datetime
+from djangoid.microidutils import microid
 
 #Represent one trusted root URI. Can be shared between several users.
 class TrustedRoot(models.Model):
@@ -89,3 +92,25 @@ class UserAttribute(models.Model):
         class Meta:
                 #Only store an attribute once for every user
                 unique_together = (("user", "attribute"),)
+
+#A claimed webpage. This will be checked using MicroID
+class ClaimedUri(models.Model):
+        user = models.ForeignKey(DjangoidUser)
+        uri = models.URLField()
+        last_checked = models.DateTimeField(default = datetime.datetime(2006, 1, 1))
+        is_valid = models.BooleanField(default = False)
+
+        def __str__(self):
+                return self.uri
+
+        def get_contact_uri(self):
+                return settings.BASE_URL + self.user.djangouser + "/"
+
+        def get_microid(self):
+                return microid(self.get_contact_uri(), self.uri)
+
+        class Admin:
+                pass
+
+        class Meta:
+                unique_together = (("user", "uri"),)
