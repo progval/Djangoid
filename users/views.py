@@ -18,6 +18,7 @@
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
 from django.conf import settings
+from django.core.urlresolvers import reverse as urlreverse
 from openid.server import server
 
 from djangoid.server.views import getDjangoidUserFromIdentity
@@ -26,7 +27,7 @@ from djangoid.openidhandlers import convertToOpenIDRequest, checkYadisRequest, c
 from djangoid.microidutils import microid
 
 def useryadis(request, uid):
-        res = render_to_response("users/yadis.xrds", {"server_url": settings.BASE_URL, "uid": uid})
+        res = render_to_response("users/yadis.xrds", {"server_url": settings.BASE_URL[:-1] + urlreverse("djangoid.server.views.endpoint"), "uid": uid})
         mimetype = "application/xrds+xml; charset=%s" % settings.DEFAULT_CHARSET
         res["Content-Type"] = mimetype
         return res
@@ -38,8 +39,8 @@ def userpage(request, uid):
 
         user = DjangoidUser.objects.get(djangouser = uid)
         mid = microid(user.get_user_page(), user.get_user_page())
-        res = render_to_response("users/userpage.html", {"server_url": settings.BASE_URL, "user": user, "microid": mid})
-        res["X-XRDS-Location"] = settings.BASE_URL + uid + "/yadis/"
+        res = render_to_response("users/userpage.html", {"server_url": settings.BASE_URL[:-1] + urlreverse("djangoid.server.views.endpoint"), "user": user, "microid": mid})
+        res["X-XRDS-Location"] = user.get_yadis_uri()
         return res
 
 def testid(request):

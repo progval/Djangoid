@@ -1,8 +1,8 @@
 <html>
         <head>
                 <link rel="openid.server" href="{{ server_url }}" />
-                <link rel="openid.delegate" href="{{ server_url}}{{ user.djangouser }}/" />
-                <meta http-equiv="x-xrds-location" content="{{ server_url }}{{ user.djangouser }}/yadis/" />
+                <link rel="openid.delegate" href="{{ user.get_user_page }}/" />
+                <meta http-equiv="x-xrds-location" content="{{ user.get_yadis_uri }}" />
                 <meta name="microid" content="{{ microid }}" />
         </head>
         <body>

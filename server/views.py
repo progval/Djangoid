@@ -19,6 +19,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.conf import settings
 from django.shortcuts import render_to_response
 from django.contrib.auth.views import redirect_to_login
+from django.core.urlresolvers import reverse as urlreverse
 from django.contrib.auth.models import User as DjangoUser
 from djangoid.users.models import DjangoidUser, ClaimedUri
 from djangoid.openidhandlers import checkYadisRequest, convertToOpenIDRequest, convertToHttpResponse, handleOpenIDRequest 
@@ -29,7 +30,7 @@ import urllib
 #       http://id.nicolast.be/nicolas/
 #                             ^^^^^^^
 #Watch the trailing /
-_identityRe = re.compile(settings.BASE_URL + "(?P<uid>[^/]+)/$")
+_identityRe = re.compile(settings.BASE_URL[:-1] + (urlreverse("djangoid.users.views.userpage", kwargs = {"uid": "@blah@"})[:-1].replace("@blah@", "(?P<uid>[^/]+)/$")))
 
 #Get a DjangoidUser object, based on a delegate URI
 def getDjangoidUserFromIdentity(identity):
@@ -93,6 +94,6 @@ def endpoint(request):
 
 #A server YADIS document is requested. I don't think this is widely used yet, but well... Let's just return it.
 def serveryadis(request):
-        res = render_to_response("server/yadis.xrds", {"server_url": settings.BASE_URL})
+        res = render_to_response("server/yadis.xrds", {"server_url": settings.BASE_URL[:-1] + urlreverse("djangoid.server.views.endpoint")})
         res["Content-Type"] = "application/xrds+xml; charset=%s" % settings.DEFAULT_CHARSET
         return res

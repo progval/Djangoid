@@ -18,6 +18,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.core.urlresolvers import reverse as urlreverse
 import datetime
 from djangoid.microidutils import microid, find_microid
 
@@ -53,7 +54,11 @@ class DjangoidUser(models.Model):
                 return False
 
         def get_user_page(self):
-                return settings.BASE_URL + self.djangouser + "/"
+                #Strip of last / from BASE_URL
+                return settings.BASE_URL[:-1] + urlreverse("djangoid.users.views.userpage", kwargs = {"uid": self.djangouser})
+
+        def get_yadis_uri(self):
+                return settings.BASE_URL[:-1] + urlreverse("djangoid.users.views.useryadis", kwargs = {"uid": self.djangouser})
 
         class Admin:
                 pass
@@ -100,6 +105,7 @@ class UserAttribute(models.Model):
 class ClaimedUri(models.Model):
         user = models.ForeignKey(DjangoidUser)
         uri = models.URLField()
+        description = models.CharField(maxlength = 128, blank = True)
         last_checked = models.DateTimeField(default = datetime.datetime(2006, 1, 1))
         is_valid = models.BooleanField(default = False)
 
