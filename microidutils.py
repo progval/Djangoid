@@ -19,8 +19,30 @@ from urllib2 import urlopen, URLError
 import sha
 from HTMLParser import HTMLParser, HTMLParseError
 
-def microid(c, p):
-        return sha.new(sha.new(c).hexdigest() + sha.new(p).hexdigest()).hexdigest()
+def microid(c, p, newstyle = True, hash = "sha1"):
+        """
+        This function generates a MicroID digest based on claimer URI and property URI
+
+        >>> microid("http://nicolast.be", "http://www.eikke.com", False)
+        'a6a18b671b0239ed85a32543ec487f443582e926'
+        >>> microid("http://nicolast.be", "http://blog.eikke.com")
+        'http+http:sha1:207ec367c4f64dc9d37c47fb490ed9c2f686f875'
+        >>> microid("mailto:spambox@nicolast.be", "http://nicolast.be")
+        'mailto+http:sha1:6646f18368bc40c4095092d61807ae98de9ef19a'
+        """
+        hashfunc = None
+        if hash == "sha1":
+                hashfunc = sha.new
+        else:
+                raise Exception, "Only sha1 hashing is supported for now"
+
+        digest = hashfunc(hashfunc(c).hexdigest() + hashfunc(p).hexdigest()).hexdigest()
+
+        if newstyle:
+                s1 = c.split(":")[0]
+                s2 = p.split(":")[0]
+                digest = "%(firsturi)s+%(seconduri)s:%(hash)s:%(microid)s" % {"firsturi": s1, "seconduri": s2, "hash": hash, "microid": digest}
+        return digest
 
 class MicroIDParser(HTMLParser):
         in_head = False
@@ -64,3 +86,10 @@ def find_microid(uri):
                 pass
 
         return ret
+
+def _test():
+    import doctest
+    doctest.testmod()
+
+if __name__ == "__main__":
+    _test()
