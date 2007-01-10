@@ -5,7 +5,7 @@
                 If you accept this, you will be redirected to {{ openid_request.return_to|escape }}.<br />
                 If you press cancel, you will be returned to {{ openid_request.getCancelURL|escape }}.<br />
 
-                <form method="post" action=".">
+                <form method="post" action="">
                         {% if openid_request.trustRootValid %}
                         <input type="checkbox" name="remember" checked="yes" value="yes" /> Remember
                         {% endif %}

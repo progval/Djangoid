@@ -86,10 +86,3 @@ def find_microid(uri):
                 pass
 
         return ret
-
-def _test():
-    import doctest
-    doctest.testmod()
-
-if __name__ == "__main__":
-    _test()

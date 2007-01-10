@@ -46,9 +46,26 @@ def convertToOpenIDRequest(request):
                 raise
 
 def checkYadisRequest(request):
+        """
+        Checks whether an incoming django.http.HttpRequest is a YADIS request
+
+        >>> class Request:
+        ...     def __init__(self, meta = {}):
+        ...             self.META = meta
+        ...
+        >>> request = Request()
+        >>> checkYadisRequest(request)
+        False
+        >>> request = Request({"HTTP_ACCEPT": "text/html"})
+        >>> checkYadisRequest(request)
+        False
+        >>> request = Request({"HTTP_ACCEPT": "application/xrds+xml"})
+        >>> checkYadisRequest(request)
+        True
+        """
         if request.META.has_key("HTTP_ACCEPT"):
                 ct = request.META["HTTP_ACCEPT"]
-                if ct.startswith("application/xrds+xml"):
+                if "application/xrds+xml" in ct:
                         return True
         return False
 

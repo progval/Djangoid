@@ -38,9 +38,7 @@ def userpage(request, uid):
                 return useryadis(request, uid)
 
         user = DjangoidUser.objects.get(djangouser = uid)
-        user.attributes = {}
-        for a in UserAttribute.objects.filter(user = user, public = True):
-                user.attributes[a.attribute.name] = a.value
+        user.attributes = user.get_attributes(True)
         mid = microid(user.get_user_page(), user.get_user_page())
         res = render_to_response("users/userpage.html", {"server_url": settings.BASE_URL[:-1] + urlreverse("djangoid.server.views.endpoint"), "user": user, "microid": mid})
         res["X-XRDS-Location"] = user.get_yadis_uri()
@@ -67,3 +65,6 @@ def accept(request):
                         user.trusted_roots.add(root)
                 return convertToHttpResponse(r.answer(True))
 
+def userfoaf(request, uid):
+        user = DjangoidUser.objects.get(djangouser = uid)
+        return HttpResponse(user.get_foaf().serialize(format = "pretty-xml"))

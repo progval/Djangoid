@@ -64,6 +64,13 @@ class DjangoidUser(models.Model):
                 return settings.BASE_URL[:-1] + urlreverse("djangoid.users.views.useryadis", kwargs = {"uid": self.djangouser})
 
         def get_name(self):
+                """
+                Get a (public) representation of the full name of a user
+
+                >>> user = DjangoidUser(djangouser = "test")
+                >>> user.get_name()
+                'test'
+                """
                 f = None
                 l = None
                 try:
@@ -84,6 +91,42 @@ class DjangoidUser(models.Model):
                                 return l
                         return f + " " + l
 
+        def get_attributes(self, public = False):
+                attributes = {}
+                for a in UserAttribute.objects.filter(user = self, public = public):
+                        attributes[a.attribute.name] = a.value
+                return attributes
+
+        def get_foaf(self):
+                import sha
+                try:
+                        from rdflib.Graph import Graph
+                        from rdflib import URIRef, Literal, BNode, Namespace, URIRef
+                        from rdflib import RDF
+                except ImportError:
+                        raise Exception, "Please install RDFLib from http://rdflib.net"
+
+                FOAF_NS = "http://xmlns.com/foaf/0.1/"
+
+                store = Graph()
+                store.bind("foaf", FOAF_NS)
+                FOAF = Namespace(FOAF_NS)
+
+                user = BNode()
+                attributes = self.get_attributes(True)
+
+                store.add((user, RDF.type, FOAF["Person"]))
+                store.add((user, FOAF["name"], Literal(attributes["FIRST_NAME"] + " " + attributes["LAST_NAME"])))
+                store.add((user, FOAF["family_name"], Literal(attributes["LAST_NAME"])))
+                store.add((user, FOAF["nick"], Literal(attributes["NICKNAME"])))
+                store.add((user, FOAF["homepage"], URIRef(attributes["HOMEPAGE_URI"])))
+                store.add((user, FOAF["mbox_sha1sum"], Literal(sha.new(attributes["EMAIL"]).hexdigest())))
+                store.add((user, FOAF["jabberID"], Literal(attributes["IM_JID"])))
+
+
+                return store
+
+        
         class Admin:
                 pass
 
