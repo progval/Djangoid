@@ -22,6 +22,8 @@ from django.core.urlresolvers import reverse as urlreverse
 import datetime
 from djangoid.microidutils import microid, find_microid
 
+from django.contrib import admin
+
 #Represent one trusted root URI. Can be shared between several users.
 class TrustedRoot(models.Model):
         root = models.URLField("Trusted root URI", primary_key = True)
@@ -37,7 +39,7 @@ class DjangoidUser(models.Model):
         #This seems not to work:
         #djangouser = models.ForeignKey(User, primary_key = True)
         #So using an ugly hack... TODO: Fixme!
-        djangouser = models.CharField('Django user username', maxlength = 30, primary_key = True, help_text = "This should be the username of an existing user in the django.contrib.auth system")
+        djangouser = models.CharField('Django user username', max_length = 30, primary_key = True, help_text = "This should be the username of an existing user in the django.contrib.auth system")
         trusted_roots = models.ManyToManyField(TrustedRoot, blank = True, null = True, help_text = "URI's trusted by this user")
 
         def __str__(self):
@@ -129,19 +131,21 @@ class DjangoidUser(models.Model):
         
         class Admin:
                 pass
+admin.site.register(DjangoidUser)
 
 #Identities can have attributes. These items represent one possible attribute.
 class IdentityAttribute(models.Model):
-        name = models.CharField("Name", maxlength = 128, help_text = "Internal name of the attribute.", primary_key = True)
-        title = models.CharField("Title", maxlength = 128, help_text = "Title of the attribute, as displayed to the user")
+        name = models.CharField("Name", max_length = 128, help_text = "Internal name of the attribute.", primary_key = True)
+        title = models.CharField("Title", max_length = 128, help_text = "Title of the attribute, as displayed to the user")
         description = models.TextField("Description", blank = True, help_text = "Longer description of the attribute, as displayed to the user")
-        regex = models.CharField("Validation regex", maxlength = 128, blank = True, help_text = "Regex the value of this field is validated upon on updates")
+        regex = models.CharField("Validation regex", max_length = 128, blank = True, help_text = "Regex the value of this field is validated upon on updates")
 
         def __str__(self):
                 return self.title
 
         class Admin:
                 pass
+admin.site.register(IdentityAttribute)
 
 #This maps an attribute to a user, including a value, obviously
 class UserAttribute(models.Model):
@@ -163,12 +167,13 @@ class UserAttribute(models.Model):
         class Meta:
                 #Only store an attribute once for every user
                 unique_together = (("user", "attribute"),)
+admin.site.register(UserAttribute)
 
 #A claimed webpage. This will be checked using MicroID
 class ClaimedUri(models.Model):
         user = models.ForeignKey(DjangoidUser)
         uri = models.URLField()
-        description = models.CharField(maxlength = 128, blank = True)
+        description = models.CharField(max_length = 128, blank = True)
         last_checked = models.DateTimeField(default = datetime.datetime(2006, 1, 1))
         is_valid = models.BooleanField(default = False)
 
@@ -200,3 +205,4 @@ class ClaimedUri(models.Model):
                 unique_together = (("user", "uri"),)
                 get_latest_by = "last_checked"
                 ordering = ["user", "is_valid", "last_checked"]
+admin.site.register(ClaimedUri)

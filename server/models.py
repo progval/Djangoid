@@ -1,4 +1,5 @@
 #Djangoid - Django-based OpenID server/provider
+#Copyright (C) 2012  Valentin Lorentz
 #Copyright (C) 2006  Nicolas Trangez <ikke nicolast be>
 #
 #This program is free software; you can redistribute it and/or modify
@@ -16,25 +17,29 @@
 #
 #EOL
 from django.db import models
+from django.contrib import admin
 
 #These are some dumb mappings of the original OpenID store tables as used by the SQLStore implemenation(s).
 #They're used by "DjangoidStore"
 class OidStoreNonce(models.Model):
-        nonce = models.CharField(maxlength = 8, primary_key = True)
+        nonce = models.CharField(max_length = 8, primary_key = True)
         expires = models.IntegerField()
+admin.site.register(OidStoreNonce)
 
 class OidStoreAssociation(models.Model):
         server_url = models.TextField()
-        handle = models.CharField(maxlength = 255)
+        handle = models.CharField(max_length = 255)
         secret = models.TextField()
         issued = models.IntegerField()
         lifetime = models.IntegerField()
-        assoc_type = models.CharField(maxlength = 64)
+        assoc_type = models.CharField(max_length = 64)
 
         class Meta:
                 #Django got no multi-column primary keys
                 unique_together = (("server_url", "handle"),)
+admin.site.register(OidStoreAssociation)
 
 class OidStoreSetting(models.Model):
-        setting = models.CharField(maxlength = 128, primary_key = True)
+        setting = models.CharField(max_length = 128, primary_key = True)
         value = models.TextField()
+admin.site.register(OidStoreSetting)
