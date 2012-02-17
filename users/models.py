@@ -33,6 +33,7 @@ class TrustedRoot(models.Model):
 
         class Admin:
                 pass
+admin.site.register(TrustedRoot)
 
 #Represent one system user, based on Django's internal user system.
 class DjangoidUser(models.Model):
