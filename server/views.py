@@ -1,4 +1,5 @@
 #Djangoid - Django-based OpenID server/provider
+#Copyright (C) 2012  Valentin Lorentz
 #Copyright (C) 2006  Nicolas Trangez <ikke nicolast be>
 #
 #This program is free software; you can redistribute it and/or modify
@@ -30,10 +31,14 @@ import urllib
 #       http://id.nicolast.be/nicolas/
 #                             ^^^^^^^
 #Watch the trailing /
-_identityRe = re.compile(settings.BASE_URL[:-1] + (urlreverse("djangoid.users.views.userpage", kwargs = {"uid": "@blah@"})[:-1].replace("@blah@", "(?P<uid>[^/]+)/$")))
+_identityRe = None
 
 #Get a DjangoidUser object, based on a delegate URI
 def getDjangoidUserFromIdentity(identity):
+	global _identityRe
+	if _identityRe is None:
+		# Prevent circular import, because of urlreverse.
+		re.compile(settings.BASE_URL[:-1] + (urlreverse("djangoid.users.views.userpage", kwargs = {"uid": "@blah@"})[:-1].replace("@blah@", "(?P<uid>[^/]+)/$")))
         uid = _identityRe.match(identity).groupdict()["uid"]
         user = DjangoidUser.objects.filter(djangouser = uid)
         if not len(user) == 0:

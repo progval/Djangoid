@@ -17,12 +17,15 @@
 #EOL
 from django.conf.urls.defaults import *
 
+from django.contrib import admin
+admin.autodiscover()
+
 urlpatterns = patterns('',
     # Example:
     # (r'^djangoid/', include('djangoid.apps.foo.urls.foo')),
     (r'^testid/$', 'djangoid.users.views.testid'),
     (r'^yadis/$', 'djangoid.server.views.serveryadis'),
-    (r'^admin/', include('django.contrib.admin.urls')),
+    url(r'^admin/', include(admin.site.urls)),
     (r'^login/$', 'django.contrib.auth.views.login', {"template_name": "users/login.html"}),
     (r'^accept/$', 'djangoid.users.views.accept'),
     (r'^(?P<uid>[^/]+)/yadis/$', 'djangoid.users.views.useryadis'),

@@ -17,6 +17,8 @@
 #EOL
 # Django settings for djangoid project.
 
+import os
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -27,7 +29,7 @@ ADMINS = (
 MANAGERS = ADMINS
 
 DATABASE_ENGINE = 'sqlite3'           # 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
-DATABASE_NAME = 'db.dat'             # Or path to database file if using sqlite3.
+DATABASE_NAME = os.path.join(os.path.dirname(__file__), 'db.dat')             # Or path to database file if using sqlite3.
 DATABASE_USER = ''             # Not used with sqlite3.
 DATABASE_PASSWORD = ''         # Not used with sqlite3.
 DATABASE_HOST = ''             # Set to empty string for localhost. Not used with sqlite3.
@@ -55,10 +57,10 @@ MEDIA_URL = ''
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
-ADMIN_MEDIA_PREFIX = '/media/'
+ADMIN_MEDIA_PREFIX = '/media/admin/'
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'j=*#$h%7pi0x+4wydvg6yhioyp2qq_r^10l(#z^j_-mbyzmkd%'
+SECRET_KEY = 'fi7x3zaq^bemok0=$@8z(5t)%_7#%)wcfsirj7)m0+8y2!8*kd'
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -92,4 +94,4 @@ INSTALLED_APPS = (
     'djangoid.users',
 )
 
-BASE_URL = "http://localhost:8000/"
+BASE_URL = "http://openid.progval.net/"
