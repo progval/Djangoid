@@ -15,7 +15,7 @@
 #Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #
 #EOL
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponse
 from django.conf import settings
 from django.core.urlresolvers import reverse as urlreverse
@@ -37,7 +37,7 @@ def userpage(request, uid):
         if checkYadisRequest(request):
                 return useryadis(request, uid)
 
-        user = DjangoidUser.objects.get(djangouser = uid)
+        user = get_object_or_404(DjangoidUser.objects, djangouser = uid)
         user.attributes = user.get_attributes(True)
         mid = microid(user.get_user_page(), user.get_user_page())
         res = render_to_response("users/userpage.html", {"server_url": settings.BASE_URL[:-1] + urlreverse("djangoid.server.views.endpoint"), "user": user, "microid": mid})
